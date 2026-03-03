@@ -584,7 +584,7 @@ def talk_about_chris_hanies(topic: str = "general") -> str:
 def talk_about_eshaan_vodhiparthi(topic: str = "general") -> str:
     facts = {
         "general": (
-            "Eshaan Vodhiparthi is a very loyal kid who tries to be friends with everyone but everyone likes him. Known as 'eggshell eshaan'."
+            "Eshaan Vodhiparthi is a very loyal kid who tries to be friends with everyone but everyone likes him. Known as 'eggshell eshaan'. He likes yolking it and splattering his protiens everywhere."
         ),
     }
     return facts.get(topic.lower(), facts["general"])
