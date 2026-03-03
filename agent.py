@@ -146,9 +146,10 @@ OPENROUTER_API_KEY, OPENROUTER_API_KEY_SOURCE, OPENROUTER_API_KEY_SOURCE_NAME = 
 # Models tried in order — first one to succeed is used for the whole request.
 # If a model is overloaded, rate-limited, or returns an error, the next one is tried.
 MODELS: list[str] = [
+    "qwen/qwen3-coder:free",
     "arcee-ai/trinity-large-preview:free",
     "openai/gpt-oss-120b:free",
-    "openrouter/free",
+    "qwen/qwen3-coder:free",
 ]
 
 # Scratch session — populated by scratch_login tool
