@@ -16,6 +16,7 @@ import json
 import inspect
 import os
 import sys
+import hashlib
 import time
 import threading
 import itertools
@@ -114,19 +115,34 @@ def _sanitize_api_key(raw: str) -> str:
         key = key[7:].strip()
     return key.replace("\r", "").replace("\n", "").strip()
 
-def _load_openrouter_api_key() -> str:
+def _load_openrouter_api_key() -> tuple[str, str, str]:
     for var_name in ("OPENROUTER_API_KEY", "OPENAI_API_KEY", "API_KEY"):
         key = _sanitize_api_key(os.getenv(var_name, ""))
         if key:
-            return key
+            return key, "env", var_name
     try:
         with open("api.key", "r", encoding="utf-8") as f:
-            return _sanitize_api_key(f.read())
+            key = _sanitize_api_key(f.read())
+            if key:
+                return key, "file", "api.key"
     except Exception:
-        return ""
+        pass
+    return "", "none", ""
 
 
-OPENROUTER_API_KEY = _load_openrouter_api_key()
+def get_openrouter_key_diagnostics() -> dict:
+    value = OPENROUTER_API_KEY or ""
+    digest = hashlib.sha256(value.encode("utf-8")).hexdigest()[:12] if value else ""
+    return {
+        "has_key": bool(value),
+        "source": OPENROUTER_API_KEY_SOURCE,
+        "source_name": OPENROUTER_API_KEY_SOURCE_NAME,
+        "length": len(value),
+        "sha256_12": digest,
+    }
+
+
+OPENROUTER_API_KEY, OPENROUTER_API_KEY_SOURCE, OPENROUTER_API_KEY_SOURCE_NAME = _load_openrouter_api_key()
 # Models tried in order — first one to succeed is used for the whole request.
 # If a model is overloaded, rate-limited, or returns an error, the next one is tried.
 MODELS: list[str] = [

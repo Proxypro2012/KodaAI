@@ -13,6 +13,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from agent import (
     client, MODELS, tools, dispatch_tool,
     _msg_to_dict, _extract_text_tool_calls,
+    get_openrouter_key_diagnostics,
 )
 
 app = Flask(__name__, static_folder="static")
@@ -194,6 +195,15 @@ def get_tools():
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True})
+
+
+@app.route("/api/diag", methods=["GET"])
+def diag():
+    return jsonify({
+        "ok": True,
+        "models": MODELS,
+        "openrouter": get_openrouter_key_diagnostics(),
+    })
 
 
 @app.route("/api/reset", methods=["POST", "OPTIONS"])
