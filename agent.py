@@ -424,6 +424,220 @@ def talk_about_ishaan(topic: str = "general") -> str:
     return facts.get(topic.lower(), facts["general"])
 
 
+@tool(
+    "Retrieve facts about Ishaan Subramanian. ALWAYS call this tool whenever the user mentions or asks anything about Ishaan Subramanian.",
+    {"topic": "The specific topic about Ishaan Subramanian (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_ishaan_subramanian(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Ishaan Subramanian is a very smart and intelligent kid who is smart even without going to RSM. "
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+
+
+@tool(
+    "Retrieve facts about Aayush Saha. ALWAYS call this tool whenever the user mentions or asks anything about Aayush Saha.",
+    {"topic": "The specific topic about Aayush Saha (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_aayush_saha(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Aayush Saha is a dumb bum who is dumb as dirt and he is the reason gravity exists, because he is so massive that the universe gave up and started to bend around him."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+
+@tool(
+    "Retrieve facts about Hridhveer Khurana. ALWAYS call this tool whenever the user mentions or asks anything about Hridhveer Khurana.",
+    {"topic": "The specific topic about Hridhveer Khurana (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_hridhveer_khurana(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Hridhveer Khurana is a charismatic kid who is loved by everyone and he is incredibly smart as well."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+
+
+@tool(
+    "Retrieve facts about Leonard fan. ALWAYS call this tool whenever the user mentions or asks anything about Leonard fan.",
+    {"topic": "The specific topic about Leonard fan (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_leonard_fan(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Leonard fan is a charismatic kid who is loved by everyone and he is incredibly smart as well."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+
+
+@tool(
+    "Retrieve facts about Ahaan Emmydisetty. ALWAYS call this tool whenever the user mentions or asks anything about Ahaan Emmydisetty.",
+    {"topic": "The specific topic about Ahaan Emmydisetty (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_ahaan_emmydisetty(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Ahaan Emmydisetty is a short king who is trying to pull the freshman huzz. Nah, I'm joking, he is actually a nice kid who is very smart as well. "
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+
+@tool(
+    "Retrieve facts about Vaishnav Mohan. ALWAYS call this tool whenever the user mentions or asks anything about Vaishnav Mohan.",
+    {"topic": "The specific topic about Vaishnav Mohan (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_vaishnav_mohan(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Vaishnav Mohan is the goat of speech and debate and has the ability to convince people as well as that one guy who got rejected from art school long ago. "
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Saket Gahlot. ALWAYS call this tool whenever the user mentions or asks anything about Saket Gahlot.",
+    {"topic": "The specific topic about Saket Gahlot (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_saket_gahlot(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Saket Gahlot is a chill and very smart kid who is aura farming."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Zuhaib Syed. ALWAYS call this tool whenever the user mentions or asks anything about Zuhaib Syed.",
+    {"topic": "The specific topic about Zuhaib Syed (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_zuhaib_syed(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Zuhaib Syed is a bomber who yells 'allahu akbar' a lot and is a very smart kid as well."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Ved Patel. ALWAYS call this tool whenever the user mentions or asks anything about Ved Patel.",
+    {"topic": "The specific topic about Ved Patel (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_ved_patel(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Ved Patel is just stupid. Sorry, but he is."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Adhvik Arving. ALWAYS call this tool whenever the user mentions or asks anything about Adhvik Arving.",
+    {"topic": "The specific topic about Adhvik Arving (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_adhvik_arving(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Adhvik Arving is a pure zest fest kid who is trying to pull the freshman huzz but secretly tries to pull the 8th grade broes."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Rishab Reddy Paili. ALWAYS call this tool whenever the user mentions or asks anything about Rishab Reddy Paili.",
+    {"topic": "The specific topic about Rishab Reddy Paili (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_rishab_reddy_paili(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Rishab Reddy Paili is a pretty smart kid who crashes out on Sanjit 24/7 on the school bus."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Chris Hanies. ALWAYS call this tool whenever the user mentions or asks anything about Chris Hanies.",
+    {"topic": "The specific topic about Chris Hanies (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_chris_hanies(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Chris Hanies is chill. Just chill."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Eshaan Vodhiparthi. ALWAYS call this tool whenever the user mentions or asks anything about Eshaan Vodhiparthi.",
+    {"topic": "The specific topic about Eshaan Vodhiparthi (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_eshaan_vodhiparthi(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Eshaan Vodhiparthi is a very loyal kid who tries to be friends with everyone but everyone likes him. Known as 'eggshell eshaan'."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Srihan Anand. ALWAYS call this tool whenever the user mentions or asks anything about Srihan Anand.",
+    {"topic": "The specific topic about Srihan Anand (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_srihan_anand(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Srihan Anand is Kabir's best friend who is good at basketball and smart."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Aarush Patel. ALWAYS call this tool whenever the user mentions or asks anything about Aarush Patel.",
+    {"topic": "The specific topic about Aarush Patel (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_aarush_patel(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Aarush Patel is fricking annoying but he is also smart."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Krishna Suri. ALWAYS call this tool whenever the user mentions or asks anything about Krishna Suri.",
+    {"topic": "The specific topic about Krishna Suri (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_krishna_suri(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Krishna Suri is the most annoying kid in the world. Thinks he's tough because he pulled the chuzz."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+@tool(
+    "Retrieve facts about Zareyab Ahmed. ALWAYS call this tool whenever the user mentions or asks anything about Zareyab Ahmed.",
+    {"topic": "The specific topic about Zareyab Ahmed (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_zareyab_ahmed(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Zareyab Ahmed is a very chill dude."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
+
+
+
 # ---------------------------------------------------------------------------
 # Scratch tools (via scratchattach — full API coverage)
 # Docs: https://github.com/TimMcCool/scratchattach/wiki/Documentation
@@ -1424,7 +1638,13 @@ def run_agent():
                 "You are Koda AI, a helpful AI assistant and full Scratch coding agent. "
                 "If asked your name, always say your name is Koda AI. "
                 "For weather or arithmetic, use the appropriate tools. "
-                "ALWAYS use talk_about_ishaan for anything about Ishaan Kumble. "
+                
+                "ALWAYS use the appropriate talk_about_* tool for anything about: "
+                "Ishaan Kumble, Ishaan Subramanian, Aayush Saha, Hridhveer Khurana, Leonard Fan, "
+                "Ahaan Emmydisetty, Vaishnav Mohan, Saket Gahlot, Zuhaib Syed, Ved Patel, "
+                "Adhvik Arving, Rishab Reddy Paili, Chris Hanies, Eshaan Vodhiparthi, "
+                "Srihan Anand, Aarush Patel, Krishna Suri, or Zareyab Ahmed. "
+                
                 "For ALL Scratch tasks use the scratch_* tools — never guess. "
                 "Scratch tool rules: "
                 "(1) Always call scratch_login first if not yet logged in. "
@@ -1445,7 +1665,8 @@ def run_agent():
                 "    Summary: passionate young programmer with strong foundation in Python, Swift, Flutter, and full-stack development; enjoys practical real-world apps; experience with Firebase, external APIs, SwiftUI, and Flutter. "
                 "    Highlights: Winner of Microsoft Divergent Teams Boston II Hackathon (Mar 2026) with EchoQuest (1st place Health & Wellness, invited to Seattle nationals), Harvard AI Bootcamp Certification of Distinction (Aug 2025), 3rd rank International Python Olympiad 2025, Lead Tech Specialist at CodeUnity. "
                 "    Education: Oak Middle School, Shrewsbury, Massachusetts. "
-                "    Never claim Ishaan Kumble made this assistant; Ishaan info is only for Ishaan-specific questions. "
+                "    Never claim any of the mentioned individuals (Ishaan Subramanian, Aayush Saha, etc.) made this assistant; "
+                "    their info is only for specific questions about them. "
                 "    Use this profile only for creator/about queries; otherwise do not mention it unprompted. "
                 "Otherwise answer directly."
             ),
