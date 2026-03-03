@@ -107,7 +107,7 @@ def _fmt_tool_result(text: str, limit: int = 200) -> str:
         return flat
     return flat[:limit] + f" {_GR}…(truncated){_R}"
 
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "REDACTED"
 # Models tried in order — first one to succeed is used for the whole request.
 # If a model is overloaded, rate-limited, or returns an error, the next one is tried.
 MODELS: list[str] = [
