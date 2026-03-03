@@ -151,10 +151,9 @@ OPENROUTER_API_KEY, OPENROUTER_API_KEY_SOURCE, OPENROUTER_API_KEY_SOURCE_NAME = 
 # Models tried in order — first one to succeed is used for the whole request.
 # If a model is overloaded, rate-limited, or returns an error, the next one is tried.
 MODELS: list[str] = [
-    "qwen/qwen3-coder:free",
     "arcee-ai/trinity-large-preview:free",
     "openai/gpt-oss-120b:free",
-    "qwen/qwen3-coder:free",
+    "google/gemini-2.0-flash-exp:free",  # final backstop
 ]
 
 # Scratch session — populated by scratch_login tool
@@ -444,17 +443,17 @@ def talk_about_ishaan_subramanian(topic: str = "general") -> str:
 
 
 
-#@tool(
-#    "Retrieve facts about Aayush Saha. ALWAYS call this tool whenever the user mentions or asks anything about Aayush Saha.",
-#    {"topic": "The specific topic about Aayush Saha (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
-#)
-#def talk_about_aayush_saha(topic: str = "general") -> str:
-#    facts = {
-#        "general": (
-#            "Aayush Saha is a dumb bum who is dumb as dirt and he is the reason gravity exists, because he is so massive that the universe gave up and started to bend around him."
-#        ),
-#    }
-#    return facts.get(topic.lower(), facts["general"])
+@tool(
+    "Retrieve facts about Aayush Saha. ALWAYS call this tool whenever the user mentions or asks anything about Aayush Saha.",
+    {"topic": "The specific topic about Aayush Saha (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+)
+def talk_about_aayush_saha(topic: str = "general") -> str:
+    facts = {
+        "general": (
+            "Aayush Saha is a dumb bum who is dumb as dirt and he is the reason gravity exists, because he is so massive that the universe gave up and started to bend around him."
+        ),
+    }
+    return facts.get(topic.lower(), facts["general"])
 
 
 @tool(
@@ -589,7 +588,7 @@ def talk_about_chris_hanies(topic: str = "general") -> str:
 def talk_about_eshaan_vodhiparthi(topic: str = "general") -> str:
     facts = {
         "general": (
-            "Eshaan Vodhiparthi is a very loyal kid who tries to be friends with everyone but everyone likes him. Known as 'eggshell eshaan'. He likes yolking it and splattering his protiens everywhere."
+            "Eshaan Vodhiparthi is a very loyal kid who tries to be friends with everyone but everyone likes him. Known as 'eggshell eshaan'."
         ),
     }
     return facts.get(topic.lower(), facts["general"])
