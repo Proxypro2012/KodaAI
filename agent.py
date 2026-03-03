@@ -148,7 +148,7 @@ OPENROUTER_API_KEY, OPENROUTER_API_KEY_SOURCE, OPENROUTER_API_KEY_SOURCE_NAME = 
 MODELS: list[str] = [
     "arcee-ai/trinity-large-preview:free",
     "openai/gpt-oss-120b:free",
-    "google/gemini-2.0-flash-exp:free",  # final backstop
+    "openrouter/free",
 ]
 
 # Scratch session — populated by scratch_login tool
