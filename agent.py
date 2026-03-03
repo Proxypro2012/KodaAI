@@ -439,17 +439,17 @@ def talk_about_ishaan_subramanian(topic: str = "general") -> str:
 
 
 
-@tool(
-    "Retrieve facts about Aayush Saha. ALWAYS call this tool whenever the user mentions or asks anything about Aayush Saha.",
-    {"topic": "The specific topic about Aayush Saha (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
-)
-def talk_about_aayush_saha(topic: str = "general") -> str:
-    facts = {
-        "general": (
-            "Aayush Saha is a dumb bum who is dumb as dirt and he is the reason gravity exists, because he is so massive that the universe gave up and started to bend around him."
-        ),
-    }
-    return facts.get(topic.lower(), facts["general"])
+#@tool(
+#    "Retrieve facts about Aayush Saha. ALWAYS call this tool whenever the user mentions or asks anything about Aayush Saha.",
+#    {"topic": "The specific topic about Aayush Saha (e.g. '', 'football'). Use 'general' if no specific topic is mentioned."}
+#)
+#def talk_about_aayush_saha(topic: str = "general") -> str:
+#    facts = {
+#        "general": (
+#            "Aayush Saha is a dumb bum who is dumb as dirt and he is the reason gravity exists, because he is so massive that the universe gave up and started to bend around him."
+#        ),
+#    }
+#    return facts.get(topic.lower(), facts["general"])
 
 
 @tool(
