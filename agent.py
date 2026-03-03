@@ -108,13 +108,20 @@ def _fmt_tool_result(text: str, limit: int = 200) -> str:
         return flat
     return flat[:limit] + f" {_GR}…(truncated){_R}"
 
+def _sanitize_api_key(raw: str) -> str:
+    key = (raw or "").strip().strip('"').strip("'")
+    if key.lower().startswith("bearer "):
+        key = key[7:].strip()
+    return key.replace("\r", "").replace("\n", "").strip()
+
 def _load_openrouter_api_key() -> str:
-    key = os.getenv("OPENROUTER_API_KEY", "").strip()
-    if key:
-        return key
+    for var_name in ("OPENROUTER_API_KEY", "OPENAI_API_KEY", "API_KEY"):
+        key = _sanitize_api_key(os.getenv(var_name, ""))
+        if key:
+            return key
     try:
         with open("api.key", "r", encoding="utf-8") as f:
-            return f.read().strip()
+            return _sanitize_api_key(f.read())
     except Exception:
         return ""
 
