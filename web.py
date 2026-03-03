@@ -7,13 +7,14 @@ import json
 import os
 import uuid
 import time
+import openai
 from flask import Flask, request, jsonify, send_from_directory
 
 # Import everything we need from the agent module
 from agent import (
     client, MODELS, tools, dispatch_tool,
     _msg_to_dict, _extract_text_tool_calls,
-    get_openrouter_key_diagnostics,
+    get_openrouter_key_diagnostics, OPENROUTER_API_KEY,
 )
 
 app = Flask(__name__, static_folder="static")
@@ -73,6 +74,11 @@ def _get_conversation(session_id: str) -> list[dict]:
     return _conversations[session_id]
 
 
+def _is_auth_error(exc: Exception) -> bool:
+    """Return True if *exc* is an authentication/authorisation failure."""
+    return isinstance(exc, openai.AuthenticationError)
+
+
 def _chat_with_fallback(**kwargs):
     """Try each model in order — mirrors agent.py's logic."""
     last_exc = None
@@ -80,6 +86,9 @@ def _chat_with_fallback(**kwargs):
         try:
             return client.chat.completions.create(model=model, **kwargs)
         except Exception as e:
+            # Authentication errors affect all models — stop immediately
+            if _is_auth_error(e):
+                raise
             last_exc = e
     raise last_exc
 
@@ -103,6 +112,16 @@ def chat():
     if not user_msg:
         return jsonify({"error": "Empty message"}), 400
 
+    if not OPENROUTER_API_KEY or not OPENROUTER_API_KEY.strip():
+        return jsonify({
+            "error": (
+                "OpenRouter API key is not configured. "
+                "Please set the OPENROUTER_API_KEY environment variable "
+                "with a valid key from https://openrouter.ai/keys"
+            ),
+            "session_id": session_id,
+        }), 503
+
     conversation = _get_conversation(session_id)
     conversation.append({"role": "user", "content": user_msg})
 
@@ -116,6 +135,14 @@ def chat():
         )
     except Exception as e:
         conversation.pop()
+        if _is_auth_error(e):
+            return jsonify({
+                "error": (
+                    "Authentication failed (401): your OPENROUTER_API_KEY is invalid or expired. "
+                    "Please update it at https://openrouter.ai/keys"
+                ),
+                "session_id": session_id,
+            }), 401
         return jsonify({"error": str(e), "session_id": session_id}), 502
 
     message = response.choices[0].message
