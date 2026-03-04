@@ -158,6 +158,8 @@ MODELS: list[str] = [
 
 # Scratch session — populated by scratch_login tool
 _scratch_session = None
+_scratch_login_username: str | None = None
+_scratch_login_password: str | None = None
 # Cache for project JSON to avoid flooding the LLM context
 _project_json_cache: dict[str, dict] = {}
 
@@ -685,6 +687,38 @@ def _is_scratch_forbidden_error(exc: Exception) -> bool:
     txt = str(exc).lower()
     return "forbidden" in txt or "not allowed to perform this action" in txt
 
+
+def _scratch_relogin() -> tuple[bool, str]:
+    global _scratch_session
+    if scratch3 is None:
+        return False, "scratchattach is not installed."
+    if not _scratch_login_username or not _scratch_login_password:
+        return False, "No stored Scratch credentials for auto-relogin."
+    try:
+        import warnings
+        warnings.filterwarnings("ignore", category=scratch3.LoginDataWarning)
+        _scratch_session = scratch3.login(_scratch_login_username, _scratch_login_password)
+        return True, f"Re-logged in as '{_scratch_login_username}'."
+    except Exception as e:
+        return False, f"Auto-relogin failed: {e}"
+
+
+def _run_scratch_write_action(action, project_id: str) -> tuple[object | None, str | None]:
+    try:
+        return action(), None
+    except Exception as e:
+        if _is_scratch_forbidden_error(e):
+            ok, _msg = _scratch_relogin()
+            if ok:
+                try:
+                    return action(), None
+                except Exception as e2:
+                    if _is_scratch_forbidden_error(e2):
+                        return None, _scratch_forbidden_hint(project_id)
+                    return None, f"Error: {e2}"
+            return None, _scratch_forbidden_hint(project_id)
+        return None, f"Error: {e}"
+
 # ── Authentication ──────────────────────────────────────────────────────────
 
 @tool(
@@ -692,13 +726,15 @@ def _is_scratch_forbidden_error(exc: Exception) -> bool:
     {"username": "Scratch username", "password": "Scratch password"},
 )
 def scratch_login(username: str, password: str) -> str:
-    global _scratch_session
+    global _scratch_session, _scratch_login_username, _scratch_login_password
     if scratch3 is None:
         return "scratchattach is not installed. Run: pip install scratchattach"
     try:
         import warnings
         warnings.filterwarnings("ignore", category=scratch3.LoginDataWarning)
         _scratch_session = scratch3.login(username, password)
+        _scratch_login_username = username
+        _scratch_login_password = password
         return f"Logged in as '{username}'."
     except Exception as e:
         return f"Login failed: {e}"
@@ -905,7 +941,9 @@ def scratch_set_project_json(project_id: str, new_json: str) -> str:
     try:
         data = json.loads(new_json)
         project = _scratch_session.connect_project(project_id)
-        project.set_json(data)   # set_json accepts a dict per the docs
+        _result, err_msg = _run_scratch_write_action(lambda: project.set_json(data), str(project_id))
+        if err_msg:
+            return err_msg
         _project_json_cache[str(project_id)] = data
         return f"Project {project_id} updated successfully. URL: {_scratch_project_url(project_id)}"
     except json.JSONDecodeError as e:
@@ -979,6 +1017,14 @@ def scratch_create_project(title: str) -> str:
     if project:
         return _project_info(project)
 
+    # Session may be stale; refresh login once and retry create.
+    if "forbidden" in str(first_msg).lower() or "not allowed" in str(first_msg).lower():
+        relog_ok, _relog_msg = _scratch_relogin()
+        if relog_ok:
+            project, first_msg = _create_via_api(project_json=_default_project_json())
+            if project:
+                return _project_info(project, note="Created after refreshing Scratch session.")
+
     # Attempt 2: if scratchattach hits internal list-index issues, retry using a
     # known-good template JSON from one of the user's existing projects.
     try:
@@ -1021,7 +1067,8 @@ def scratch_create_project(title: str) -> str:
         f"Error: Could not create project '{clean_title}'. "
         f"Initial create failed with: {first_msg}. "
         f"Template fallback also failed with: {third_msg}. "
-        "Try again in a few seconds, or create one project manually on Scratch first and retry."
+        "Try again in a few seconds, run scratch_my_projects to check whether the project was created anyway, "
+        "or create one project manually on Scratch first and retry."
     )
 
 @tool("Share a Scratch project.", {"project_id": "Numeric Scratch project ID"})
@@ -1029,7 +1076,12 @@ def scratch_share_project(project_id: str) -> str:
     err = _require_scratch()
     if err: return err
     try:
-        _scratch_session.connect_project(project_id).share()
+        _result, err_msg = _run_scratch_write_action(
+            lambda: _scratch_session.connect_project(project_id).share(),
+            str(project_id),
+        )
+        if err_msg:
+            return err_msg
         return f"Project {project_id} shared. URL: {_scratch_project_url(project_id)}"
     except Exception as e:
         if _is_scratch_forbidden_error(e):
@@ -1041,7 +1093,12 @@ def scratch_unshare_project(project_id: str) -> str:
     err = _require_scratch()
     if err: return err
     try:
-        _scratch_session.connect_project(project_id).unshare()
+        _result, err_msg = _run_scratch_write_action(
+            lambda: _scratch_session.connect_project(project_id).unshare(),
+            str(project_id),
+        )
+        if err_msg:
+            return err_msg
         return f"Project {project_id} unshared. URL: {_scratch_project_url(project_id)}"
     except Exception as e:
         if _is_scratch_forbidden_error(e):
@@ -1529,7 +1586,12 @@ def scratch_build_script(project_id: str, sprite_name: str, blocks_json: str) ->
         target["blocks"].update(new_blocks)
 
         # Commit to Scratch
-        _scratch_session.connect_project(project_id).set_json(cached)
+        _result, err_msg = _run_scratch_write_action(
+            lambda: _scratch_session.connect_project(project_id).set_json(cached),
+            str(project_id),
+        )
+        if err_msg:
+            return err_msg
         _project_json_cache[str(project_id)] = cached
 
         opcodes_added = [b.get("opcode", "?") for b in new_blocks.values()]
@@ -1839,7 +1901,12 @@ def scratch_clear_scripts(project_id: str, sprite_name: str) -> str:
         old_count = len(target.get("blocks", {}))
         target["blocks"] = {}
 
-        _scratch_session.connect_project(project_id).set_json(cached)
+        _result, err_msg = _run_scratch_write_action(
+            lambda: _scratch_session.connect_project(project_id).set_json(cached),
+            str(project_id),
+        )
+        if err_msg:
+            return err_msg
         _project_json_cache[str(project_id)] = cached
         return (
             f"DONE: Cleared {old_count} blocks from '{sprite_name}' in project {project_id}. "
