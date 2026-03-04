@@ -63,6 +63,7 @@ SYSTEM_PROMPT = (
     "    Use scratch_add_extension to enable extensions like 'pen', 'music', 'text2speech'. "
     "    Use scratch_clear_scripts to remove all blocks from a sprite before rebuilding. "
     "    For simple say blocks you can still use scratch_add_say_block as a shortcut. "
+    "    After a Scratch project is created or edited successfully, ALWAYS include the direct clickable project URL in your final response: https://scratch.mit.edu/projects/<project_id> "
     "    For edit requests, do not loop on read-only tools: call scratch_get_project_json at most once, then perform the write tool and stop. "
     "    If user says 'Scratch Cat', treat it as sprite name 'Sprite1' unless another cat sprite exists. "
     "(3) Never show the full project JSON to the user — keep it cached internally. "

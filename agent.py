@@ -665,6 +665,26 @@ def _project_summary(p) -> dict:
         "url": getattr(p, "url", ""),
     }
 
+
+def _scratch_project_url(project_id: str) -> str:
+    pid = str(project_id).strip()
+    return f"https://scratch.mit.edu/projects/{pid}"
+
+
+def _scratch_forbidden_hint(project_id: str) -> str:
+    url = _scratch_project_url(project_id)
+    return (
+        f"Permission denied by Scratch for project {project_id}. "
+        f"Project URL: {url} . "
+        "This usually means the logged-in account cannot edit that project in this session. "
+        "Open the URL, verify ownership/login, or remix into a project you own and retry."
+    )
+
+
+def _is_scratch_forbidden_error(exc: Exception) -> bool:
+    txt = str(exc).lower()
+    return "forbidden" in txt or "not allowed to perform this action" in txt
+
 # ── Authentication ──────────────────────────────────────────────────────────
 
 @tool(
@@ -864,11 +884,13 @@ def scratch_get_project_json(project_id: str) -> str:
             data = json.loads(data)
         _project_json_cache[str(project_id)] = data
         targets = data.get("targets", [])
+        url = _scratch_project_url(project_id)
         return json.dumps({
             "project_id": project_id,
+            "url": url,
             "sprite_count": len(targets),
             "sprites": [{"name": t["name"], "block_count": len(t.get("blocks", {}))} for t in targets],
-            "note": "Full JSON cached. Use scratch_add_say_block or scratch_set_project_json to make changes.",
+            "note": "Full JSON cached. Use scratch_build_script, scratch_add_say_block, or scratch_set_project_json to make changes.",
         }, indent=2)
     except Exception as e:
         return f"Error: {e}"
@@ -885,10 +907,12 @@ def scratch_set_project_json(project_id: str, new_json: str) -> str:
         project = _scratch_session.connect_project(project_id)
         project.set_json(data)   # set_json accepts a dict per the docs
         _project_json_cache[str(project_id)] = data
-        return f"Project {project_id} updated successfully."
+        return f"Project {project_id} updated successfully. URL: {_scratch_project_url(project_id)}"
     except json.JSONDecodeError as e:
         return f"Invalid JSON: {e}"
     except Exception as e:
+        if _is_scratch_forbidden_error(e):
+            return _scratch_forbidden_hint(project_id)
         return f"Error: {e}"
 
 @tool(
@@ -944,7 +968,7 @@ def scratch_create_project(title: str) -> str:
     def _project_info(p, note: str = "") -> str:
         pid = getattr(p, "id", None)
         ptitle = getattr(p, "title", clean_title)
-        url = getattr(p, "url", "")
+        url = getattr(p, "url", "") or (_scratch_project_url(str(pid)) if pid else "")
         payload = {"id": pid, "title": ptitle, "url": url}
         if note:
             payload["note"] = note
@@ -976,6 +1000,23 @@ def scratch_create_project(title: str) -> str:
     if project:
         return _project_info(project, note=f"Created via remix fallback from project {remix_source}.")
 
+    # Attempt 4: Sometimes Scratch creates the project but still returns a forbidden/write error.
+    # Try to find a project with the requested title in the user's My Stuff and return it.
+    try:
+        existing = _scratch_session.mystuff_projects("all", page=1)
+        for p in existing:
+            if str(getattr(p, "title", "")).strip().lower() == clean_title.lower():
+                pid = str(getattr(p, "id", ""))
+                if pid:
+                    return json.dumps({
+                        "id": pid,
+                        "title": getattr(p, "title", clean_title),
+                        "url": _scratch_project_url(pid),
+                        "note": "Project with the requested title already exists in your account. Returning that URL.",
+                    }, indent=2)
+    except Exception:
+        pass
+
     return (
         f"Error: Could not create project '{clean_title}'. "
         f"Initial create failed with: {first_msg}. "
@@ -989,8 +1030,10 @@ def scratch_share_project(project_id: str) -> str:
     if err: return err
     try:
         _scratch_session.connect_project(project_id).share()
-        return f"Project {project_id} shared."
+        return f"Project {project_id} shared. URL: {_scratch_project_url(project_id)}"
     except Exception as e:
+        if _is_scratch_forbidden_error(e):
+            return _scratch_forbidden_hint(project_id)
         return f"Error: {e}"
 
 @tool("Unshare a Scratch project.", {"project_id": "Numeric Scratch project ID"})
@@ -999,8 +1042,10 @@ def scratch_unshare_project(project_id: str) -> str:
     if err: return err
     try:
         _scratch_session.connect_project(project_id).unshare()
-        return f"Project {project_id} unshared."
+        return f"Project {project_id} unshared. URL: {_scratch_project_url(project_id)}"
     except Exception as e:
+        if _is_scratch_forbidden_error(e):
+            return _scratch_forbidden_hint(project_id)
         return f"Error: {e}"
 
 @tool("Set the title of a Scratch project.", {"project_id": "Numeric project ID", "title": "New title"})
@@ -1491,11 +1536,13 @@ def scratch_build_script(project_id: str, sprite_name: str, blocks_json: str) ->
         return (
             f"DONE: Added script with {len(new_blocks)} blocks to '{sprite_name}' in project {project_id}. "
             f"Opcodes: {opcodes_added[:10]}{'...' if len(opcodes_added) > 10 else ''}. "
-            f"Edit committed to Scratch."
+            f"Edit committed to Scratch. URL: {_scratch_project_url(project_id)}"
         )
     except json.JSONDecodeError as e:
         return f"Invalid blocks_json: {e}"
     except Exception as e:
+        if _is_scratch_forbidden_error(e):
+            return _scratch_forbidden_hint(project_id)
         return f"Error building script: {e}"
 
 
@@ -1567,8 +1614,13 @@ def scratch_create_variable(project_id: str, sprite_name: str, name: str,
 
         _scratch_session.connect_project(project_id).set_json(cached)
         _project_json_cache[str(project_id)] = cached
-        return f"DONE: Created {k} '{name}' on '{sprite_name}' (id={new_id}) in project {project_id}."
+        return (
+            f"DONE: Created {k} '{name}' on '{sprite_name}' (id={new_id}) in project {project_id}. "
+            f"URL: {_scratch_project_url(project_id)}"
+        )
     except Exception as e:
+        if _is_scratch_forbidden_error(e):
+            return _scratch_forbidden_hint(project_id)
         return f"Error: {e}"
 
 
@@ -1601,8 +1653,13 @@ def scratch_create_broadcast(project_id: str, broadcast_name: str) -> str:
 
         _scratch_session.connect_project(project_id).set_json(cached)
         _project_json_cache[str(project_id)] = cached
-        return f"DONE: Created broadcast '{broadcast_name}' (id={new_id}) in project {project_id}."
+        return (
+            f"DONE: Created broadcast '{broadcast_name}' (id={new_id}) in project {project_id}. "
+            f"URL: {_scratch_project_url(project_id)}"
+        )
     except Exception as e:
+        if _is_scratch_forbidden_error(e):
+            return _scratch_forbidden_hint(project_id)
         return f"Error: {e}"
 
 
@@ -1741,6 +1798,7 @@ def scratch_create_custom_block(project_id: str, sprite_name: str, proccode: str
         return (
             f"DONE: Created custom block '{proccode}' with args {arg_names} on '{sprite_name}'. "
             f"Definition ID: {def_id}, Prototype ID: {proto_id}. "
+            f"URL: {_scratch_project_url(project_id)}. "
             f"To call it, use scratch_build_script with: "
             f"{{\"opcode\": \"procedures_call\", \"mutation\": {{\"tagName\": \"mutation\", \"children\": [], "
             f"\"proccode\": \"{proccode}\", \"argumentids\": {json.dumps(arg_ids)}, \"warp\": \"{warp}\"}}}}"
@@ -1748,6 +1806,8 @@ def scratch_create_custom_block(project_id: str, sprite_name: str, proccode: str
     except json.JSONDecodeError as e:
         return f"Invalid JSON: {e}"
     except Exception as e:
+        if _is_scratch_forbidden_error(e):
+            return _scratch_forbidden_hint(project_id)
         return f"Error: {e}"
 
 
@@ -1781,8 +1841,13 @@ def scratch_clear_scripts(project_id: str, sprite_name: str) -> str:
 
         _scratch_session.connect_project(project_id).set_json(cached)
         _project_json_cache[str(project_id)] = cached
-        return f"DONE: Cleared {old_count} blocks from '{sprite_name}' in project {project_id}."
+        return (
+            f"DONE: Cleared {old_count} blocks from '{sprite_name}' in project {project_id}. "
+            f"URL: {_scratch_project_url(project_id)}"
+        )
     except Exception as e:
+        if _is_scratch_forbidden_error(e):
+            return _scratch_forbidden_hint(project_id)
         return f"Error: {e}"
 
 
@@ -1811,8 +1876,10 @@ def scratch_add_extension(project_id: str, extension_id: str) -> str:
 
         _scratch_session.connect_project(project_id).set_json(cached)
         _project_json_cache[str(project_id)] = cached
-        return f"DONE: Extension '{extension_id}' added to project {project_id}."
+        return f"DONE: Extension '{extension_id}' added to project {project_id}. URL: {_scratch_project_url(project_id)}"
     except Exception as e:
+        if _is_scratch_forbidden_error(e):
+            return _scratch_forbidden_hint(project_id)
         return f"Error: {e}"
 
 # ── Studios ──────────────────────────────────────────────────────────────────
@@ -2886,6 +2953,7 @@ def run_agent():
                 "    Use scratch_add_extension to enable extensions like 'pen', 'music', 'text2speech'. "
                 "    Use scratch_clear_scripts to remove all blocks from a sprite before rebuilding. "
                 "    For simple say blocks you can still use scratch_add_say_block as a shortcut. "
+                "    After a Scratch project is created or edited successfully, ALWAYS include the direct clickable project URL in your final response: https://scratch.mit.edu/projects/<project_id> "
                 "    For edit requests, do not loop on read-only tools: call scratch_get_project_json at most once, then perform the write tool and stop. "
                 "    If user says 'Scratch Cat', treat it as sprite name 'Sprite1' unless another cat sprite exists. "
                 "(3) Never show the full project JSON to the user — keep it cached internally. "
